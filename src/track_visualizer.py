@@ -16,6 +16,24 @@ from loguru import logger
 from matplotlib import animation
 from matplotlib.widgets import Button, TextBox
 
+def load_dataset_params(config, dataset, viz_params_filename = "visualizer_params.json"):
+
+    # Load dataset specific visualization parameters from file
+    dataset_params_path = Path(config["visualizer_params_dir"]) / viz_params_filename
+
+    if not dataset_params_path.exists():
+        logger.error("Could not find dataset visualization parameters in {}", dataset_params_path)
+        sys.exit(-1)
+
+    with open(dataset_params_path) as f:
+        dataset_params = json.load(f)
+
+    if dataset not in dataset_params["datasets"]:
+        logger.error("Visualization parameters for dataset {} not found in {}. Please make sure, that the needed "
+                     "parameters are given", dataset, dataset_params_path)
+        sys.exit(-1)
+
+    return dataset_params["datasets"][dataset]
 
 class TrackVisualizer(object):
     def __init__(self, config: dict, tracks: List[dict], tracks_meta: List[dict], recording_meta: dict):
@@ -43,22 +61,7 @@ class TrackVisualizer(object):
         vehicle_keys = list(self.surrounding_vehicles_colors.keys())
         self.surrounding_vehicles_ids = dict(zip(vehicle_keys, -1 * np.ones(len(vehicle_keys), dtype=int)))
 
-        # Load dataset specific visualization parameters from file
-        dataset_params_path = Path(config["visualizer_params_dir"]) / "visualizer_params.json"
-
-        if not dataset_params_path.exists():
-            logger.error("Could not find dataset visualization parameters in {}", dataset_params_path)
-            sys.exit(-1)
-
-        with open(dataset_params_path) as f:
-            self.dataset_params = json.load(f)
-
-        if self.dataset not in self.dataset_params["datasets"]:
-            logger.error("Visualization parameters for dataset {} not found in {}. Please make sure, that the needed "
-                         "parameters are given", self.dataset, dataset_params_path)
-            sys.exit(-1)
-
-        self.dataset_params = self.dataset_params["datasets"][self.dataset]
+        self.dataset_params = load_dataset_params(config, self.dataset)
         self.scale_down_factor = self.dataset_params["scale_down_factor"]
 
         self.tracks = tracks
