@@ -111,16 +111,7 @@ class TrackVisualizer(object):
                                                                                                self.recording_name))
 
         # Show background image
-        background_image_path = self.config["background_image_path"]
-        if background_image_path and os.path.exists(background_image_path):
-            logger.info("Loading background image from {}", background_image_path)
-            self.background_image = cv2.cvtColor(cv2.imread(background_image_path), cv2.COLOR_BGR2RGB)
-            (self.image_height, self.image_width) = self.background_image.shape[:2]
-        else:
-            logger.warning("No background image given or path not valid. Using fallback black background.")
-            self.image_height, self.image_width = 1700, 1700
-            self.background_image = np.zeros((self.image_height, self.image_width, 3), dtype="uint8")
-        self.ax.imshow(self.background_image)
+        self.show_background_image()
 
         # Find correct text font size
         track_label_font_size = 4
@@ -233,6 +224,19 @@ class TrackVisualizer(object):
             fig_manager.window.showMaximized()
 
         plt.show()
+
+    def show_background_image(self):
+        # Show background image
+        background_image_path = self.config["background_image_path"]
+        if background_image_path and os.path.exists(background_image_path):
+            logger.info("Loading background image from {}", background_image_path)
+            self.background_image = cv2.cvtColor(cv2.imread(background_image_path), cv2.COLOR_BGR2RGB)
+            (self.image_height, self.image_width) = self.background_image.shape[:2]
+        else:
+            logger.warning("No background image given or path not valid. Using fallback black background.")
+            self.image_height, self.image_width = 1700, 1700
+            self.background_image = np.zeros((self.image_height, self.image_width, 3), dtype="uint8")
+        self.ax.imshow(self.background_image)
 
     def _update_figure(self, *args):
         """
